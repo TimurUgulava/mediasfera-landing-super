@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Медиасфера — посадочная, 3 анимированных варианта</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{ --red:#E30613; --ink:#15161a; --bg:#0e0f13; --card:#1a1c22; --mut:#9aa0ad; --line:#2a2d36 }
+  *{box-sizing:border-box; margin:0; padding:0}
+  body{ font-family:'Inter',sans-serif; background:var(--bg); color:#fff; -webkit-font-smoothing:antialiased }
+  .wrap{ max-width:1240px; margin:0 auto; padding:0 32px }
+  header{ padding:54px 0 34px; border-bottom:1px solid var(--line) }
+  .brand{ font-weight:800; font-size:20px; letter-spacing:-.5px } .brand b{ color:var(--red) }
+  h1{ font-size:clamp(30px,4vw,46px); font-weight:900; letter-spacing:-1.2px; margin-top:24px; line-height:1.06 }
+  .sub{ color:var(--mut); font-size:17px; margin-top:14px; max-width:780px; line-height:1.55 }
+  .meta{ display:flex; gap:10px; flex-wrap:wrap; margin-top:20px }
+  .badge{ background:var(--card); border:1px solid var(--line); color:#c7ccd6; font-size:12.5px; font-weight:600; padding:7px 13px; border-radius:30px } .badge b{ color:#fff }
+  .grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:24px; padding:40px 0 30px }
+  .card{ background:var(--card); border:1px solid var(--line); border-radius:18px; overflow:hidden; transition:.2s; display:flex; flex-direction:column }
+  .card:hover{ transform:translateY(-4px); border-color:var(--red); box-shadow:0 26px 60px -30px rgba(227,6,19,.5) }
+  .prev{ position:relative; height:280px; overflow:hidden; border-bottom:1px solid var(--line); background:#fff }
+  .prev iframe{ width:1280px; height:900px; border:0; transform:scale(.33); transform-origin:top left; pointer-events:none }
+  .prev .num{ position:absolute; top:14px; left:14px; z-index:2; background:var(--red); color:#fff; font-weight:800; font-size:13px; padding:5px 11px; border-radius:8px }
+  .card-b{ padding:22px 24px 24px; flex:1; display:flex; flex-direction:column }
+  .card h3{ font-size:20px; font-weight:800; letter-spacing:-.3px }
+  .card .idea{ color:var(--mut); font-size:14px; line-height:1.5; margin-top:10px; flex:1 }
+  .open{ display:inline-flex; align-items:center; gap:8px; margin-top:18px; background:#fff; color:var(--ink); text-decoration:none; font-weight:700; font-size:15px; padding:12px 20px; border-radius:10px; align-self:flex-start; transition:.15s }
+  .open:hover{ background:var(--red); color:#fff }
+  .note{ color:var(--mut); font-size:14.5px; line-height:1.6; padding:18px 0 6px }
+  .note b{ color:#fff }
+  footer{ border-top:1px solid var(--line); padding:24px 0 60px; color:var(--mut); font-size:13.5px; line-height:1.6; margin-top:30px }
+  @media(max-width:900px){ .grid{ grid-template-columns:1fr } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">медиа<b>сфера</b> · посадочная</div>
+    <h1>Контент, который продаёт. Три анимированных исполнения</h1>
+    <p class="sub">Белый лист-документ на лёгком воздушном фоне, рукописные правки на полях, красный — только акцент. Одна идея в трёх характерах движения. Контент урезан, без цен, рейтинг не на первом экране. Открой любой и пощупай анимацию — главное здесь именно в движении.</p>
+    <div class="meta">
+      <span class="badge">Лёгкий фон, <b>красный — акцент</b></span>
+      <span class="badge">Лист + рукописные правки</span>
+      <span class="badge">Много плавного интерактива</span>
+      <span class="badge">Чисто на десктопе и мобайле</span>
+    </div>
+  </header>
+  <div class="grid">
+    <div class="card">
+      <div class="prev"><div class="num">Вариант A</div><iframe src="a.html" scrolling="no"></iframe></div>
+      <div class="card-b">
+        <h3>A — чистая редакция</h3>
+        <p class="idea">Строгий редакторский характер. В первом экране — «сюжет» правки текста: слабые слова зачёркиваются красным, всплывает продающая строка, проставляются цифры результата. 3D-наклон карточек кейсов за курсором, живой лид-магнит «Продаст или нет».</p>
+        <a class="open" href="a.html">Открыть A →</a>
+      </div>
+    </div>
+    <div class="card">
+      <div class="prev"><div class="num">Вариант B</div><iframe src="b.html" scrolling="no"></iframe></div>
+      <div class="card-b">
+        <h3>B — живая бумага</h3>
+        <p class="idea">Самый интерактивный и при этом самый чистый. Лист физически наклоняется и «дышит» вслед за курсором, мягко плавает по секциям. Спокойная сетка цифр вместо бегущей строки, conic-индикатор в лид-магните.</p>
+        <a class="open" href="b.html">Открыть B →</a>
+      </div>
+    </div>
+    <div class="card">
+      <div class="prev"><div class="num">Вариант C</div><iframe src="c.html" scrolling="no"></iframe></div>
+      <div class="card-b">
+        <h3>C — кинематограф</h3>
+        <p class="idea">Самый «дорогой» и плавный. «Сюжет» правки прокручивается вместе со скроллом (scroll-scrub), глубина-parallax слоёв, короткая тёмная драматичная сцена. Кастомный курсор и магнитные элементы в центре внимания.</p>
+        <a class="open" href="c.html">Открыть C →</a>
+      </div>
+    </div>
+  </div>
+  <p class="note">Во всех трёх: убраны стикеры-животные, рукописные красные пометки чуть крупнее и читаемее, экраны почищены от лишнего «шума» (меньше акцентов и игры шрифтами), а интерактива — больше. Пометки на узких экранах не прячутся, а переезжают в поток под свою фразу. Проверено на ширинах <b>1440 / 1280 / 1024 / 768 / 390</b>: без горизонтального скролла и наездов.</p>
+  <footer>
+    Посадочная Медиасферы под трафик из рейтинга контент-агентств. Дальше выбираем один вариант и дожимаем экран за экраном. Лид-магнит «Продаст или нет» работает в демо-режиме (заглушка) — на проде подключается бэкенд.
+  </footer>
+</div>
+</body>
+</html>

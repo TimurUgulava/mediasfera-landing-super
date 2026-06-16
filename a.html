@@ -1,0 +1,1282 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Медиасфера — контент, который продаёт</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Inter:wght@400;500;600;700;800;900&family=Lora:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f7f4ee;
+    --bg-2:#efeae0;
+    --sheet:#ffffff;
+    --ink:#17171a;
+    --ink-soft:#36363a;
+    --grey:#6c6c70;
+    --red:#E30613;
+    --red-dark:#bd0005;
+    --marker:#ffe267;
+    --green:#1f9d52;
+    --line:rgba(23,23,26,.10);
+    --serif:'Lora',Georgia,'Times New Roman',serif;
+    --sans:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    --hand:'Caveat',cursive;
+
+    /* ширина текстовой колонки и боковых полей-гаттеров (резерв под пометки) */
+    --col:560px;          /* текстовая колонка (уже листа) */
+    --gutter:210px;       /* боковое поле под рукописную пометку */
+    --gap:30px;           /* зазор колонка↔гаттер */
+    --pad-y:58px;
+
+    --ease-out:cubic-bezier(.16,.84,.30,1);
+    --ease-soft:cubic-bezier(.22,.61,.36,1);
+    --spring:cubic-bezier(.34,1.56,.4,1);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+  html{overflow-x:clip}
+  body{
+    font-family:var(--sans);color:var(--ink);line-height:1.55;
+    -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+    overflow-x:clip;max-width:100%;
+    background:
+      radial-gradient(130% 90% at 50% -12%, #ffffff 0%, var(--bg) 46%, var(--bg-2) 100%);
+    background-attachment:fixed;
+  }
+  body::before{
+    content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.4;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.022'/%3E%3C/svg%3E");
+  }
+
+  /* ===================== SCROLL PROGRESS (red marker line) ===================== */
+  .progress{position:fixed;top:0;left:0;height:3px;width:0;z-index:200;
+    background:linear-gradient(90deg,var(--red),var(--red-dark));
+    box-shadow:0 0 8px rgba(227,6,19,.4);transition:width .08s linear}
+
+  /* ===================== CUSTOM CURSOR ===================== */
+  .cur-dot,.cur-ring{position:fixed;top:0;left:0;z-index:300;pointer-events:none;
+    border-radius:50%;transform:translate(-50%,-50%);opacity:0}
+  .cur-dot{width:7px;height:7px;background:var(--red);transition:opacity .25s ease}
+  .cur-ring{width:40px;height:40px;border:1.5px solid rgba(227,6,19,.5);display:grid;place-items:center;
+    transition:width .28s var(--ease-out),height .28s var(--ease-out),background .28s var(--ease-out),
+               border-color .28s var(--ease-out),opacity .25s ease}
+  .cur-ring .clbl{font-family:var(--sans);font-size:10.5px;font-weight:700;letter-spacing:.03em;color:#fff;
+    opacity:0;transform:scale(.6);transition:opacity .2s ease,transform .2s ease;white-space:nowrap;text-transform:lowercase}
+  body.cur-on.cur-in .cur-dot,body.cur-on.cur-in .cur-ring{opacity:1}
+  body.cur-on .cur-ring.hot{width:64px;height:64px;background:var(--red);border-color:var(--red)}
+  body.cur-on .cur-ring.hot .clbl{opacity:1;transform:scale(1)}
+  body.cur-on .cur-dot.hide{opacity:0}
+  body.cur-active,body.cur-active a,body.cur-active button,
+  body.cur-active input,body.cur-active textarea,body.cur-active .faq-q{cursor:none}
+
+  /* ===================== HEADER ===================== */
+  header.topbar{position:sticky;top:0;z-index:60;
+    background:rgba(247,244,238,.82);backdrop-filter:saturate(180%) blur(14px);
+    -webkit-backdrop-filter:saturate(180%) blur(14px);border-bottom:1px solid var(--line)}
+  .topbar-inner{max-width:1240px;margin:0 auto;padding:13px 34px;
+    display:flex;align-items:center;justify-content:space-between;gap:22px}
+  .logo{font-family:var(--sans);font-weight:800;font-size:21px;letter-spacing:-.03em;
+    color:var(--ink);text-decoration:none;user-select:none;white-space:nowrap}
+  .logo .sfera{color:var(--red)}
+  .topbar-right{display:flex;align-items:center;gap:16px}
+  .btn-head{font-family:var(--sans);font-size:14.5px;font-weight:600;background:var(--red);color:#fff;
+    border:none;cursor:pointer;padding:10px 20px;border-radius:9px;text-decoration:none;white-space:nowrap;
+    transition:background .18s ease,transform .18s ease,box-shadow .18s ease;
+    box-shadow:0 6px 16px -9px rgba(227,6,19,.6)}
+  .btn-head:hover{background:var(--red-dark);transform:translateY(-1px)}
+  .menu-toggle{display:inline-flex;align-items:center;gap:11px;background:none;border:none;cursor:pointer;
+    font-family:var(--sans);font-size:14.5px;font-weight:600;color:var(--ink);padding:8px 4px;letter-spacing:-.01em}
+  .menu-toggle .mt-bars{display:inline-flex;flex-direction:column;gap:4px;width:22px}
+  .menu-toggle .mt-bars span{display:block;height:2px;width:22px;background:var(--ink);border-radius:2px;
+    transition:transform .3s var(--ease-out),opacity .25s ease,width .3s var(--ease-out)}
+  .menu-toggle:hover .mt-bars span:nth-child(2){width:14px}
+  body.menu-open .menu-toggle .mt-bars span:nth-child(1){transform:translateY(6px) rotate(45deg)}
+  body.menu-open .menu-toggle .mt-bars span:nth-child(2){opacity:0}
+  body.menu-open .menu-toggle .mt-bars span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+
+  /* ===================== FULLSCREEN OVERLAY MENU ===================== */
+  .overlay-nav{position:fixed;inset:0;z-index:120;background:rgba(23,23,26,.98);
+    clip-path:circle(0% at calc(100% - 60px) 40px);
+    transition:clip-path .62s var(--ease-io,cubic-bezier(.76,0,.24,1));
+    display:flex;flex-direction:column;visibility:hidden;pointer-events:none}
+  .overlay-nav.open{clip-path:circle(150% at calc(100% - 60px) 40px);visibility:visible;pointer-events:auto}
+  .overlay-top{display:flex;align-items:center;justify-content:space-between;padding:18px 34px;
+    max-width:1240px;margin:0 auto;width:100%}
+  .overlay-top .logo{color:#fff}
+  .overlay-close{background:none;border:none;cursor:pointer;color:#fff;font-family:var(--sans);
+    font-size:15px;font-weight:600;display:inline-flex;align-items:center;gap:10px;padding:8px 4px}
+  .overlay-close .x{width:22px;height:22px;position:relative;display:inline-block}
+  .overlay-close .x::before,.overlay-close .x::after{content:"";position:absolute;left:0;top:10px;width:22px;height:2px;background:#fff;border-radius:2px}
+  .overlay-close .x::before{transform:rotate(45deg)}.overlay-close .x::after{transform:rotate(-45deg)}
+  .overlay-list{flex:1;display:flex;flex-direction:column;justify-content:center;
+    max-width:1240px;margin:0 auto;width:100%;padding:0 34px 40px}
+  .overlay-list a{font-family:var(--serif);font-weight:600;color:#fff;text-decoration:none;
+    font-size:clamp(34px,6vw,68px);line-height:1.16;letter-spacing:-.02em;position:relative;
+    width:fit-content;padding:6px 0;display:flex;align-items:baseline;gap:18px;
+    opacity:0;transform:translateY(26px);transition:opacity .5s var(--ease-out),transform .5s var(--ease-out),color .25s ease}
+  .overlay-nav.open .overlay-list a{opacity:1;transform:none}
+  .overlay-nav.open .overlay-list a:nth-child(1){transition-delay:.16s}
+  .overlay-nav.open .overlay-list a:nth-child(2){transition-delay:.23s}
+  .overlay-nav.open .overlay-list a:nth-child(3){transition-delay:.30s}
+  .overlay-nav.open .overlay-list a:nth-child(4){transition-delay:.37s}
+  .overlay-nav.open .overlay-list a:nth-child(5){transition-delay:.44s}
+  .overlay-list a .idx{font-family:var(--sans);font-size:14px;font-weight:700;color:var(--red);opacity:.85;transform:translateY(-.6em)}
+  .overlay-list a::after{content:"";position:absolute;left:0;right:100%;bottom:6px;height:4px;
+    background:var(--red);transition:right .4s var(--ease-out)}
+  .overlay-list a:hover{color:var(--red);transform:translateX(14px)}
+  .overlay-list a:hover::after{right:0}
+  .overlay-foot{max-width:1240px;margin:0 auto;width:100%;padding:0 34px 34px;
+    color:#9a9a9a;font-family:var(--sans);font-size:13.5px;display:flex;gap:22px;flex-wrap:wrap}
+  .overlay-foot a{color:#cfcfcf;text-decoration:none}.overlay-foot a:hover{color:#fff}
+
+  /* ===================== STAGE / SECTION ===================== */
+  .stage{padding:48px 24px 64px;display:flex;justify-content:center}
+  .section{padding:46px 24px;display:flex;justify-content:center}
+  .wrap{position:relative;width:100%;max-width:calc(var(--col) + 2*var(--gutter) + 2*var(--gap))}
+
+  /* THE SHEET */
+  .sheet{
+    background:var(--sheet);border-radius:10px;position:relative;
+    box-shadow:
+      0 1px 1px rgba(23,23,26,.04),
+      0 2px 6px rgba(23,23,26,.04),
+      0 34px 80px -34px rgba(23,23,26,.26),
+      0 12px 30px -18px rgba(23,23,26,.16);
+    will-change:transform;
+    /* лист = grid: [гаттер-лево] [текст] [гаттер-право] */
+    display:grid;
+    grid-template-columns:var(--gutter) minmax(0,var(--col)) var(--gutter);
+    column-gap:var(--gap);
+    align-items:start;
+    padding:var(--pad-y) 0;
+  }
+  /* левая красная «поле»-линия как в тетради */
+  .sheet::after{content:"";position:absolute;top:0;bottom:0;
+    left:calc(var(--gutter) + var(--gap) - 16px);width:1px;background:rgba(227,6,19,.16)}
+  /* скотч сверху */
+  .sheet::before{content:"";position:absolute;top:-13px;left:50%;
+    transform:translateX(-50%) rotate(-1.4deg);width:130px;height:26px;
+    background:rgba(255,226,103,.55);border:1px solid rgba(210,180,70,.4);border-radius:2px;
+    box-shadow:0 4px 10px -6px rgba(0,0,0,.25);z-index:4}
+
+  /* текстовая колонка живёт в СРЕДНЕМ треке грида */
+  .col{grid-column:2}
+
+  /* ===================== MARGIN-NOTE SYSTEM (КЛЮЧЕВОЕ) ===================== */
+  /* Пометка — ДОЧЕРНИЙ элемент фразы (.anno внутри .has-note). */
+  /* .has-note ВСЕГДА position:relative — пометка привязана к СВОЕЙ фразе. */
+  /* На ШИРОКИХ: anno = absolute, top:0 (= верх своей фразы), уезжает в боковой */
+  /* гаттер по горизонтали (left/right 100% + gap). Привязка авто, без хардкода top. */
+  /* На УЗКИХ: anno становится static и встаёт ПРЯМО ПОД фразой (в потоке). */
+  .has-note{position:relative}
+  .anno{
+    font-family:var(--hand);color:var(--red);font-weight:600;font-size:29px;line-height:1.18;
+    transition:opacity .55s var(--ease-out),transform .55s var(--ease-out);
+  }
+  .anno small{display:block;font-size:19px;font-weight:500;opacity:.92;margin-top:2px}
+
+  /* WIDE: пометка absolute в боковом гаттере, по вертикали — у своей фразы */
+  @media (min-width:1025px){
+    /* инлайновый top из старой вёрстки больше не нужен — привязка идёт к фразе */
+    .anno{position:absolute;top:2px;width:calc(var(--gutter) - 6px);z-index:8}
+    /* правый гаттер: справа от текстовой колонки */
+    .anno.r{left:calc(100% + var(--gap));text-align:left}
+    /* левый гаттер: слева от текстовой колонки */
+    .anno.l{right:calc(100% + var(--gap));text-align:right}
+    /* тонкая красная линия-выноска к фразе */
+    .anno.r::before{content:"";position:absolute;left:-22px;top:11px;width:18px;height:2px;background:var(--red);opacity:.5}
+    .anno.r::after{content:"";position:absolute;left:-23px;top:8px;width:6px;height:6px;border-left:2px solid var(--red);border-bottom:2px solid var(--red);transform:rotate(45deg);opacity:.5}
+    .anno.l::before{content:"";position:absolute;right:-22px;top:11px;width:18px;height:2px;background:var(--red);opacity:.5}
+    .anno.l::after{content:"";position:absolute;right:-23px;top:8px;width:6px;height:6px;border-right:2px solid var(--red);border-top:2px solid var(--red);transform:rotate(45deg);opacity:.5}
+  }
+  /* NARROW: пометка в потоке, прямо под фразой, с красной каретой слева */
+  @media (max-width:1024px){
+    .anno{display:block;position:static;width:auto;margin:8px 0 2px;padding-left:22px;
+      font-size:25px;text-align:left}
+    .anno::before{content:"";position:absolute;left:0;top:3px;width:4px;height:calc(100% - 6px);
+      background:var(--marker);border-left:2px solid var(--red);border-radius:2px}
+    .has-note{display:block}
+  }
+  /* reveal-состояние пометки */
+  .reveal.pre .anno{opacity:0;transform:translateY(8px)}
+
+  /* ===================== TYPO / TEXT ===================== */
+  .kicker{font-family:var(--sans);font-size:11.5px;font-weight:700;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--red);display:inline-flex;align-items:center;gap:9px;margin-bottom:20px}
+  .kicker::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--red);display:inline-block;animation:pulseDot 2.4s ease-in-out infinite}
+  .kicker.static::before{animation:none}
+  @keyframes pulseDot{0%,100%{box-shadow:0 0 0 0 rgba(227,6,19,.4)}50%{box-shadow:0 0 0 5px rgba(227,6,19,0)}}
+
+  h1.headline{font-family:var(--serif);font-weight:600;font-size:clamp(34px,4.6vw,52px);line-height:1.1;
+    letter-spacing:-.02em;color:var(--ink);margin-bottom:8px}
+  h2.sec-title{font-family:var(--serif);font-weight:600;font-size:clamp(27px,3.4vw,36px);line-height:1.16;
+    letter-spacing:-.018em;color:var(--ink);margin-bottom:14px}
+  h3.sub-title{font-family:var(--serif);font-weight:600;font-size:21px;line-height:1.3;color:var(--ink);margin-bottom:12px}
+  .doc-meta{font-family:var(--sans);font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--grey);
+    font-weight:500;border-top:1px dashed var(--line);padding-top:9px;margin:14px 0 22px;display:inline-block}
+  .subhead{font-family:var(--sans);font-size:16.5px;line-height:1.62;color:var(--ink-soft);margin-bottom:24px;max-width:56ch}
+  .subhead b{color:var(--ink);font-weight:600}
+  .body-p{font-family:var(--serif);font-size:18px;line-height:1.7;color:var(--ink-soft);margin-bottom:18px}
+  .body-p:last-child{margin-bottom:0}
+  .body-p b{font-weight:600;color:var(--ink)}
+
+  /* clip-reveal заголовков (построчно) */
+  .lines .ln{display:block;overflow:hidden}
+  .lines .ln > span{display:block;transform:translateY(110%);transition:transform .8s var(--ease-out)}
+  .reveal.in .lines .ln > span{transform:none}
+  .reveal.in .lines .ln:nth-child(2) > span{transition-delay:.08s}
+  .reveal.in .lines .ln:nth-child(3) > span{transition-delay:.16s}
+
+  /* маркер (закрашивается на скролле) */
+  .mark{background:linear-gradient(transparent 58%,var(--marker) 58%);background-size:0% 100%;
+    background-repeat:no-repeat;padding:0 3px;font-weight:600;color:var(--ink);
+    box-decoration-break:clone;-webkit-box-decoration-break:clone;border-radius:1px}
+  .reveal.in .mark{animation:markFill .6s var(--ease-out) .2s forwards}
+  @keyframes markFill{from{background-size:0% 100%}to{background-size:100% 100%}}
+  .was{color:var(--grey);text-decoration:line-through;text-decoration-color:var(--red);text-decoration-thickness:2px}
+
+  .divider{border:none;border-top:1px solid var(--line);margin:0 0 24px}
+  .divider.mt{margin-top:28px}
+
+  /* ===================== HERO STORY (кинетический сюжет) ===================== */
+  .story{position:relative;margin:6px 0 26px;min-height:184px;
+    border-radius:14px;padding:26px 26px 24px;
+    background:linear-gradient(180deg,rgba(255,226,103,.10),rgba(255,255,255,0) 70%);
+    border:1px solid var(--line);overflow:hidden}
+  .story-draft{font-family:var(--serif);font-size:22px;line-height:1.5;color:var(--ink-soft);
+    min-height:1.5em;margin-bottom:6px}
+  .story-draft .w{position:relative;display:inline-block}
+  .story-draft .w.strike::after{content:"";position:absolute;left:-2px;right:-2px;top:54%;height:2.5px;
+    background:var(--red);transform:scaleX(0);transform-origin:left center;border-radius:2px}
+  .story-draft .w.strike.go::after{transform:scaleX(1);transition:transform .32s var(--ease-out)}
+  .type-caret{display:inline-block;width:2px;height:1.05em;background:var(--red);
+    vertical-align:-.16em;margin-left:1px;animation:caretBlink 1s steps(1) infinite}
+  .type-caret.gone{display:none}
+  @keyframes caretBlink{0%,49%{opacity:1}50%,100%{opacity:0}}
+  .story-clean{font-family:var(--serif);font-weight:600;font-size:24px;line-height:1.34;color:var(--ink);
+    opacity:0;transform:translateY(12px);transition:opacity .5s var(--ease-out),transform .5s var(--ease-out)}
+  .story-clean.show{opacity:1;transform:none}
+  .story-clean .hl{background:linear-gradient(transparent 56%,var(--marker) 56%);background-size:0% 100%;
+    background-repeat:no-repeat;padding:0 3px;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+  .story-clean .hl.swipe{background-size:100% 100%;transition:background-size .55s var(--ease-out)}
+  .story-stamps{display:flex;gap:13px;flex-wrap:wrap;margin-top:15px;min-height:46px}
+  .stamp-num{font-family:var(--hand);font-weight:700;font-size:24px;color:var(--green);
+    border:2.5px solid var(--green);border-radius:9px;padding:3px 13px;line-height:1.2;
+    transform:scale(.4) rotate(-9deg);opacity:0}
+  .stamp-num.red{color:var(--red);border-color:var(--red)}
+  .stamp-num.stamped{animation:stampIn .42s var(--spring) forwards}
+  @keyframes stampIn{0%{transform:scale(1.5) rotate(-9deg);opacity:0}60%{opacity:1}100%{transform:scale(1) rotate(-6deg);opacity:1}}
+  .story-replay{position:absolute;bottom:12px;right:14px;background:none;border:none;cursor:pointer;
+    font-family:var(--sans);font-size:12px;font-weight:600;color:var(--red);opacity:0;
+    display:inline-flex;align-items:center;gap:6px;transition:opacity .3s ease}
+  .story.done .story-replay{opacity:.85}
+  .story-replay:hover{opacity:1}
+  .story-replay svg{width:13px;height:13px}
+  /* фолбэк: без JS и reduced — сразу финал */
+  html:not(.js) .story-draft{opacity:1}
+  html:not(.js) .story-clean,.no-js-clean{opacity:1;transform:none}
+
+  /* ===================== CTA ===================== */
+  .cta-row{display:flex;align-items:center;gap:20px;flex-wrap:wrap;margin-bottom:22px}
+  .cta-row.nomb{margin-bottom:0}
+  .btn-primary{position:relative;font-family:var(--sans);font-size:16px;font-weight:600;background:var(--red);
+    color:#fff;border:none;cursor:pointer;padding:15px 30px;border-radius:11px;text-decoration:none;white-space:nowrap;
+    transition:transform .16s ease,background .16s ease,box-shadow .16s ease;box-shadow:0 8px 18px -8px rgba(227,6,19,.55);
+    display:inline-flex;align-items:center;justify-content:center}
+  .btn-primary .bp-inner{display:inline-block;transition:transform .2s var(--ease-out)}
+  .btn-primary:hover{background:var(--red-dark);box-shadow:0 14px 26px -10px rgba(189,0,5,.6)}
+  .no-magnet .btn-primary:hover{transform:translateY(-2px)}
+  .link-secondary{font-family:var(--sans);font-size:15px;font-weight:500;color:var(--ink);text-decoration:none;
+    cursor:pointer;background:none;border:none;padding:0;line-height:1.4;max-width:40ch;text-align:left}
+  .link-secondary span{border-bottom:2px dashed var(--red);padding-bottom:2px;transition:color .18s ease,border-color .18s ease}
+  .link-secondary:hover span{color:var(--red-dark)}
+  .link-secondary .em{color:var(--red);font-weight:600}
+
+  /* CHIPS */
+  .chips{display:flex;flex-wrap:wrap;gap:9px;margin-bottom:22px}
+  .chip{font-family:var(--sans);font-size:13px;font-weight:500;color:var(--ink-soft);background:var(--bg);
+    border:1px solid var(--line);padding:7px 14px;border-radius:100px;display:inline-flex;align-items:center;gap:7px;
+    text-decoration:none;transition:border-color .16s ease,color .16s ease,transform .16s ease}
+  a.chip:hover{border-color:var(--red);color:var(--red);transform:translateY(-1px)}
+  .chip::before{content:"";width:5px;height:5px;border-radius:50%;background:var(--red);display:inline-block}
+
+  /* TRUST */
+  .trust{font-family:var(--sans);font-size:13px;color:var(--grey);border-top:1px solid var(--line);
+    padding-top:16px;display:flex;flex-wrap:wrap;gap:6px 16px}
+  .trust span{display:inline-flex;align-items:center;white-space:nowrap}
+  .trust b{color:var(--ink);font-weight:600;margin:0 .25em}
+  .trust span+span::before{content:"·";margin-right:16px;color:rgba(23,23,26,.3)}
+
+  /* ===================== MARQUEE (бегущая строка цифр) ===================== */
+  .marquee{margin:24px 0 4px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);
+    padding:14px 0;overflow:hidden;mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);
+    -webkit-mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent)}
+  .marquee-track{display:inline-flex;white-space:nowrap;gap:0;will-change:transform;animation:scrollX 34s linear infinite}
+  .marquee:hover .marquee-track{animation-play-state:paused}
+  @keyframes scrollX{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+  .marquee .m-item{font-family:var(--serif);font-weight:600;font-size:21px;color:var(--ink);
+    padding:0 26px;display:inline-flex;align-items:center;gap:10px}
+  .marquee .m-item b{color:var(--red);font-weight:700}
+  .marquee .m-item::after{content:"";width:4px;height:4px;border-radius:50%;
+    background:rgba(23,23,26,.2);margin-left:26px}
+
+  /* ===================== FLOW (путь статьи) ===================== */
+  .flow{margin:6px 0 24px;display:flex;flex-direction:column}
+  .flow-step{position:relative;padding:15px 18px 15px 58px;border:1px solid var(--line);border-radius:13px;
+    background:var(--bg);margin-bottom:13px;opacity:1;transform:none;
+    transition:opacity .55s var(--ease-out),transform .55s var(--ease-out),border-color .18s ease,box-shadow .18s ease}
+  .flow.reveal.pre .flow-step{opacity:0;transform:translateY(12px)}
+  .flow.reveal.in .flow-step{opacity:1;transform:none}
+  .flow.reveal.in .flow-step:nth-child(1){transition-delay:.05s}
+  .flow.reveal.in .flow-step:nth-child(2){transition-delay:.13s}
+  .flow.reveal.in .flow-step:nth-child(3){transition-delay:.21s}
+  .flow.reveal.in .flow-step:nth-child(4){transition-delay:.29s}
+  .flow.reveal.in .flow-step:nth-child(5){transition-delay:.37s}
+  .flow.reveal.in .flow-step:nth-child(6){transition-delay:.45s}
+  .flow.reveal.in .flow-step:hover,.flow-step:hover{border-color:rgba(227,6,19,.35);box-shadow:0 14px 28px -18px rgba(23,23,26,.38);transform:translateX(4px)}
+  .flow-step:last-child{margin-bottom:0}
+  .flow-step .num{position:absolute;left:15px;top:50%;transform:translateY(-50%);width:30px;height:30px;
+    border-radius:50%;background:var(--red);color:#fff;font-family:var(--sans);font-size:14px;font-weight:700;
+    display:flex;align-items:center;justify-content:center;
+    transition:transform .25s var(--spring),box-shadow .25s ease}
+  .flow-step:hover .num{transform:translateY(-50%) scale(1.12);box-shadow:0 6px 14px -4px rgba(227,6,19,.5)}
+  .flow-step h4{font-family:var(--sans);font-size:16px;font-weight:700;color:var(--ink);margin-bottom:2px;letter-spacing:-.01em}
+  .flow-step p{font-family:var(--sans);font-size:13.5px;line-height:1.5;color:var(--grey)}
+  .flow-step .branch{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+  .flow-step .branch span{font-family:var(--sans);font-size:11.5px;font-weight:600;color:var(--red);background:#fff;
+    border:1px solid rgba(227,6,19,.3);padding:3px 9px;border-radius:100px}
+  .flow-step::after{content:"";position:absolute;left:30px;bottom:-13px;width:2px;height:13px;background:rgba(227,6,19,.35)}
+  .flow-step:last-child::after{display:none}
+
+  /* ===================== CASES ===================== */
+  .cases{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:4px 0 22px;perspective:1200px}
+  .case{border:1px solid var(--line);border-radius:14px;padding:22px 22px 20px;background:var(--bg);position:relative;
+    transform-style:preserve-3d;will-change:transform;
+    transition:transform .3s var(--ease-out),box-shadow .3s ease,border-color .2s ease}
+  .case.tilting{transition:box-shadow .3s ease,border-color .2s ease}
+  .case-glow{position:absolute;inset:0;border-radius:14px;pointer-events:none;opacity:0;
+    background:radial-gradient(220px circle at var(--mx,50%) var(--my,0%),rgba(227,6,19,.08),transparent 60%);
+    transition:opacity .3s ease}
+  .case:hover .case-glow{opacity:1}
+  .case:hover{transform:translateY(-5px);box-shadow:0 24px 44px -24px rgba(23,23,26,.36);border-color:rgba(227,6,19,.4)}
+  .case-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:11px}
+  .case-tags span{font-family:var(--sans);font-size:10.5px;font-weight:600;letter-spacing:.02em;text-transform:uppercase;
+    color:var(--grey);background:#fff;border:1px solid var(--line);padding:3px 9px;border-radius:100px}
+  .case-name{font-family:var(--serif);font-size:19px;font-weight:600;color:var(--ink);margin-bottom:8px}
+  .case-hero{font-family:var(--serif);font-size:25px;font-weight:700;line-height:1.18;color:var(--red);margin-bottom:8px;letter-spacing:-.01em}
+  .case-sub{font-family:var(--sans);font-size:13.5px;line-height:1.5;color:var(--ink-soft)}
+  .case-sub b{color:var(--ink);font-weight:600}
+  .case .case-link{display:inline-block;margin-top:11px;font-family:var(--sans);font-size:12.5px;font-weight:600;
+    color:var(--red);text-decoration:none;border-bottom:1px solid rgba(227,6,19,.4);padding-bottom:1px}
+  .case .case-link:hover{color:var(--red-dark)}
+
+  .logos{display:flex;flex-wrap:wrap;gap:9px 11px;align-items:center;margin:4px 0 16px}
+  .logo-pill{font-family:var(--sans);font-size:13.5px;font-weight:700;letter-spacing:.02em;color:#4a4a4a;
+    background:var(--bg);border:1px solid var(--line);padding:8px 16px;border-radius:8px}
+  .softline{font-family:var(--serif);font-style:italic;font-size:14.5px;line-height:1.55;color:var(--grey);margin-bottom:4px}
+
+  /* ===================== TEAM + YANDEX ===================== */
+  .people{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:4px 0 22px}
+  .person{display:flex;gap:13px;align-items:flex-start;padding:15px;border:1px solid var(--line);border-radius:12px;background:var(--bg);
+    transition:transform .2s var(--ease-out),box-shadow .2s ease,border-color .2s ease}
+  .person:hover{transform:translateY(-2px);box-shadow:0 14px 26px -20px rgba(23,23,26,.3);border-color:rgba(227,6,19,.3)}
+  .person .ava{flex-shrink:0;width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--red),var(--red-dark));
+    color:#fff;font-family:var(--serif);font-weight:600;font-size:17px;display:flex;align-items:center;justify-content:center}
+  .person .pname{font-family:var(--sans);font-size:15px;font-weight:700;color:var(--ink);margin-bottom:2px;letter-spacing:-.01em}
+  .person .prole{font-family:var(--sans);font-size:12.5px;line-height:1.45;color:var(--grey)}
+  .trophies{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin:4px 0 20px}
+  .trophy{padding:15px 16px 15px 46px;border:1px solid var(--line);border-radius:12px;background:var(--bg);position:relative;
+    transition:transform .2s var(--ease-out),box-shadow .2s ease}
+  .trophy:hover{transform:translateY(-2px);box-shadow:0 14px 26px -20px rgba(23,23,26,.3)}
+  .trophy::before{content:"";position:absolute;left:15px;top:17px;width:18px;height:18px;border-radius:4px;background:var(--marker);border:2px solid var(--red)}
+  .trophy b{font-family:var(--sans);font-size:14px;font-weight:700;color:var(--ink);display:block;margin-bottom:2px}
+  .trophy span{font-family:var(--sans);font-size:12.5px;line-height:1.42;color:var(--grey)}
+
+  /* ===================== FAQ ===================== */
+  .faq{margin:4px 0 6px}
+  .faq-item{border-top:1px solid var(--line)}
+  .faq-item:last-child{border-bottom:1px solid var(--line)}
+  .faq-q{width:100%;text-align:left;background:none;border:none;cursor:pointer;font-family:var(--serif);
+    font-size:19px;font-weight:600;color:var(--ink);padding:19px 44px 19px 0;position:relative;line-height:1.35}
+  .faq-q::after{content:"+";position:absolute;right:6px;top:50%;transform:translateY(-50%);font-family:var(--sans);
+    font-size:26px;font-weight:400;color:var(--red);transition:transform .25s ease;line-height:1}
+  .faq-item.open .faq-q::after{transform:translateY(-50%) rotate(45deg)}
+  .faq-a{max-height:0;overflow:hidden;transition:max-height .32s ease}
+  @media (prefers-reduced-motion:reduce){.faq-a{transition:none}}
+  .faq-a-inner{font-family:var(--serif);font-size:16px;line-height:1.62;color:var(--ink-soft);padding:0 36px 20px 0}
+
+  /* ===================== FORM ===================== */
+  .form-grid{display:flex;flex-direction:column;gap:16px;margin:6px 0 0}
+  .field label{display:block;font-family:var(--sans);font-size:13px;font-weight:600;color:var(--ink);margin-bottom:7px;letter-spacing:.01em}
+  .field input,.field textarea{width:100%;font-family:var(--serif);font-size:16px;line-height:1.5;color:var(--ink);
+    border:1px solid rgba(23,23,26,.18);border-radius:10px;padding:13px 15px;outline:none;background:#fff;transition:border-color .18s ease}
+  .field input:focus,.field textarea:focus{border-color:var(--red)}
+  .field textarea{min-height:80px;resize:vertical}
+  .field .opt{color:var(--grey);font-weight:500}
+  .seg{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:9px}
+  .seg button{font-family:var(--sans);font-size:14px;font-weight:600;color:var(--ink-soft);background:var(--bg);
+    border:1px solid rgba(23,23,26,.16);padding:9px 18px;border-radius:100px;cursor:pointer;transition:all .16s ease}
+  .seg button.on{background:var(--red);color:#fff;border-color:var(--red)}
+  .microcopy{font-family:var(--sans);font-size:13px;color:var(--grey);margin-top:12px;line-height:1.5}
+  .form-sent{display:none;margin-top:16px;padding:16px 18px;border-radius:10px;background:rgba(255,226,103,.3);
+    border:1px solid rgba(227,6,19,.25);font-family:var(--serif);font-size:16px;color:var(--ink);line-height:1.55}
+  .form-sent.show{display:block;animation:fadeIn .3s ease}
+  .relaunch-box{margin-top:28px;border-top:1px dashed var(--line);padding-top:22px}
+  .relaunch-box h3{font-family:var(--serif);font-size:20px;font-weight:600;margin-bottom:7px}
+  .relaunch-box p{font-family:var(--sans);font-size:14.5px;line-height:1.58;color:var(--ink-soft);margin-bottom:13px}
+
+  /* ===================== FOOTER ===================== */
+  footer.site-footer{background:#17171a;color:#cfcfcf;padding:42px 24px 38px;margin-top:30px}
+  .footer-inner{max-width:calc(var(--col) + 2*var(--gutter) + 2*var(--gap));margin:0 auto}
+  .footer-top{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;flex-wrap:wrap;
+    margin-bottom:22px;padding-bottom:22px;border-bottom:1px solid rgba(255,255,255,.12)}
+  .footer-top .logo{color:#fff}
+  .footer-links{display:flex;gap:20px;flex-wrap:wrap}
+  .footer-links a{font-family:var(--sans);font-size:14px;color:#cfcfcf;text-decoration:none;transition:color .16s ease}
+  .footer-links a:hover{color:#fff}
+  .footer-meta{font-family:var(--sans);font-size:12.5px;line-height:1.7;color:#9a9a9a}
+  .footer-meta .soft{color:#bdbdbd;font-style:italic;margin-top:9px;display:block}
+
+  /* ===================== LEAD-MAGNET MODAL ===================== */
+  .lm-backdrop{position:fixed;inset:0;z-index:150;background:rgba(23,23,26,.42);backdrop-filter:blur(3px);
+    display:none;align-items:center;justify-content:center;padding:24px}
+  .lm-backdrop.open{display:flex;animation:fadeIn .2s ease}
+  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+  .lm-panel{background:#fff;border-radius:16px;box-shadow:0 30px 70px -20px rgba(23,23,26,.45);width:100%;max-width:580px;
+    padding:32px 32px 28px;animation:popUp .26s var(--spring);max-height:90vh;overflow:auto;position:relative}
+  @keyframes popUp{from{opacity:0;transform:translateY(16px) scale(.98)}to{opacity:1;transform:none}}
+  .lm-panel .lm-kicker{font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--red);margin-bottom:8px}
+  .lm-panel h3{font-family:var(--serif);font-size:24px;font-weight:600;margin-bottom:6px;line-height:1.18}
+  .lm-panel .lm-sub{font-size:14px;color:var(--grey);margin-bottom:16px;line-height:1.5}
+  .lm-panel textarea{width:100%;min-height:118px;resize:vertical;font-family:var(--serif);font-size:15.5px;line-height:1.6;
+    color:var(--ink);border:1px solid rgba(23,23,26,.18);border-radius:11px;padding:14px 16px;outline:none;transition:border-color .18s ease}
+  .lm-panel textarea:focus{border-color:var(--red)}
+  .lm-actions{display:flex;gap:12px;align-items:center;margin-top:14px;flex-wrap:wrap}
+  .lm-actions .btn-primary{padding:12px 24px;font-size:15px}
+  .lm-actions .btn-primary.loading{opacity:.75;cursor:progress}
+  .lm-close{margin-left:auto;background:none;border:none;cursor:pointer;font-family:var(--sans);font-size:14px;color:var(--grey)}
+  .lm-close:hover{color:var(--ink)}
+  .lm-hint{font-family:var(--sans);font-size:12.5px;color:var(--grey)}
+  .verdict{margin-top:18px;display:none;border-top:1px dashed rgba(23,23,26,.18);padding-top:18px}
+  .verdict.show{display:block;animation:fadeIn .3s ease}
+  .verdict-head{display:flex;gap:15px;align-items:center;margin-bottom:14px}
+  .gauge{flex-shrink:0;width:78px;height:78px;border-radius:50%;display:grid;place-items:center;text-align:center;
+    position:relative;--p:0;--gcol:var(--marker);
+    background:conic-gradient(var(--gcol) calc(var(--p)*1%),rgba(23,23,26,.08) 0)}
+  .gauge::after{content:"";position:absolute;inset:5px;border-radius:50%;background:#fffaf0}
+  .gauge[data-tone=good]{--gcol:var(--green)}.gauge[data-tone=good]::after{background:#f0faf3}
+  .gauge[data-tone=bad]{--gcol:var(--red)}.gauge[data-tone=bad]::after{background:#fff2f2}
+  .gauge .gtxt{position:relative;z-index:1}
+  .gauge .gnum{font-family:var(--serif);font-weight:700;font-size:26px;line-height:1;color:var(--ink)}
+  .gauge .gunit{font-size:10px;color:var(--grey)}
+  .vtag{font-family:var(--serif);font-weight:700;font-size:18px;line-height:1.1;color:var(--ink)}
+  .vsum{font-size:13px;color:var(--grey);margin-top:4px;line-height:1.45}
+  .edits-title{font-family:var(--sans);font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--red);margin:0 0 8px}
+  .edits{display:flex;flex-direction:column;gap:9px;margin:0;padding:0;list-style:none;counter-reset:fix}
+  .edit{display:flex;gap:11px;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:11px 13px;
+    opacity:0;transform:translateY(8px);transition:opacity .4s var(--ease-out),transform .4s var(--ease-out)}
+  .edit.in{opacity:1;transform:none}
+  .edit-n{counter-increment:fix;flex-shrink:0;width:22px;height:22px;border-radius:50%;background:var(--marker);color:var(--ink);
+    font-family:var(--sans);font-weight:700;font-size:12px;display:grid;place-items:center;margin-top:1px}
+  .edit-n::before{content:counter(fix)}
+  .edit-was{font-size:13px;color:var(--grey);text-decoration:line-through;text-decoration-color:var(--red)}
+  .edit-now{font-size:13.5px;color:var(--ink);font-weight:600;margin-top:3px}
+  .edit-now::before{content:"→ ";color:var(--green);font-weight:700}
+  .vfoot{margin-top:15px;font-size:13px;color:var(--grey);line-height:1.5}
+  .vfoot a{color:var(--red);font-weight:600;text-decoration:none}
+
+  /* ===================== REVEAL (фолбэк-safe) ===================== */
+  .reveal{opacity:1;transform:none}
+  .js .reveal.pre{opacity:0;transform:translateY(26px) scale(.985)}
+  .reveal{transition:opacity .85s var(--ease-soft),transform .9s var(--ease-out)}
+  .reveal.in{opacity:1;transform:none}
+
+  /* ===================== REDUCED MOTION ===================== */
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none !important}
+    .js .reveal.pre{opacity:1 !important;transform:none !important}
+    .reveal.pre .anno{opacity:1 !important;transform:none !important}
+    .lines .ln > span{transform:none !important}
+    .mark{background-size:100% 100% !important}
+    .story-draft,.type-caret{display:none !important}
+    .story-clean{opacity:1 !important;transform:none !important}
+    .story-clean .hl{background-size:100% 100% !important}
+    .stamp-num{transform:none !important;opacity:1 !important}
+    .marquee-track{animation:none !important}
+  }
+
+  /* ===================== RESPONSIVE BREAKPOINTS ===================== */
+  /* 1281–1440: полный комфорт */
+  /* 1025–1280: гаттеры сужаются, но пометки ещё absolute и помещаются */
+  @media (max-width:1280px){
+    :root{--col:540px;--gutter:196px;--gap:26px}
+    .anno{font-size:26px}.anno small{font-size:17.5px}
+  }
+  @media (max-width:1120px){
+    :root{--col:520px;--gutter:182px;--gap:22px}
+    .anno{font-size:25px}.anno small{font-size:17px}
+  }
+  /* ≤1024: гаттеры схлопываются → одна колонка, пометки в потоке */
+  @media (max-width:1024px){
+    :root{--gutter:0px;--gap:0px;--col:600px;--pad-y:48px}
+    .sheet{grid-template-columns:minmax(0,1fr);padding-left:42px;padding-right:42px}
+    .sheet::after{left:24px}
+    .col{grid-column:1}
+  }
+  @media (max-width:880px){
+    .topbar-inner{padding:12px 20px}
+    .overlay-top,.overlay-list,.overlay-foot{padding-left:20px;padding-right:20px}
+    .cases{grid-template-columns:1fr}
+    .people{grid-template-columns:1fr}
+    .trophies{grid-template-columns:1fr}
+    .sheet{padding-left:30px;padding-right:30px}
+    .sheet::after{left:18px}
+    .story-draft{font-size:20px}.story-clean{font-size:21px}
+    .faq-q{font-size:17px}
+  }
+  @media (max-width:560px){
+    :root{--pad-y:38px}
+    .stage{padding:26px 12px 40px}
+    .section{padding:20px 12px}
+    .sheet{padding-left:22px;padding-right:22px;border-radius:8px}
+    .sheet::after{left:12px}
+    .story{padding:22px 18px 22px}
+    .marquee .m-item{font-size:18px;padding:0 20px}
+    .anno{font-size:23px;padding-left:18px}.anno small{font-size:16px}
+    .footer-top{flex-direction:column;gap:16px}
+    .lm-panel{padding:26px 20px}
+    /* header не должен распирать вьюпорт на узких */
+    .topbar-inner{padding:11px 14px;gap:10px}
+    .logo{font-size:18px}
+    .topbar-right{gap:8px}
+    .menu-toggle .mt-label{display:none}
+    .menu-toggle{padding:8px 2px}
+    .btn-head{font-size:13px;padding:9px 13px}
+  }
+</style>
+</head>
+<body class="no-magnet">
+
+<!-- progress + cursor -->
+<div class="progress" id="progress" aria-hidden="true"></div>
+<div class="cur-ring" id="curRing" aria-hidden="true"><span class="clbl" id="curLabel"></span></div>
+<div class="cur-dot" id="curDot" aria-hidden="true"></div>
+
+<!-- ============ HEADER ============ -->
+<header class="topbar">
+  <div class="topbar-inner">
+    <a href="#top" class="logo">медиа<span class="sfera">сфера</span></a>
+    <div class="topbar-right">
+      <button class="menu-toggle" id="menuToggle" aria-label="Открыть меню" aria-expanded="false" aria-controls="overlayNav">
+        <span class="mt-label">Меню</span>
+        <span class="mt-bars"><span></span><span></span><span></span></span>
+      </button>
+      <a href="#contact" class="btn-head" data-cta data-cur="обсудить">Обсудить задачу</a>
+    </div>
+  </div>
+</header>
+
+<!-- ============ FULLSCREEN OVERLAY MENU ============ -->
+<nav class="overlay-nav" id="overlayNav" aria-hidden="true">
+  <div class="overlay-top">
+    <a href="#top" class="logo">медиа<span class="sfera">сфера</span></a>
+    <button class="overlay-close" id="overlayClose" aria-label="Закрыть меню"><span class="x"></span>Закрыть</button>
+  </div>
+  <div class="overlay-list">
+    <a href="#how" data-cur="смотреть"><span class="idx">01</span>Как доводим до продаж</a>
+    <a href="#cases" data-cur="кейсы"><span class="idx">02</span>Кейсы</a>
+    <a href="#team" data-cur="редакция"><span class="idx">03</span>Редакция и Яндекс</a>
+    <a href="#contact" data-cur="написать"><span class="idx">04</span>Контакты</a>
+    <a href="#contact" data-cta data-cur="обсудить"><span class="idx">→</span>Обсудить задачу</a>
+  </div>
+  <div class="overlay-foot">
+    <span>ООО «Медиасфера» · контент, который продаёт</span>
+    <a href="#" target="_blank" rel="noopener">Telegram агентства</a>
+  </div>
+</nav>
+
+<!-- ============ A. HERO ============ -->
+<main class="stage" id="top">
+  <div class="wrap reveal pre">
+    <article class="sheet">
+      <div class="col">
+        <span class="kicker">Документ редакции · в работе</span>
+
+        <h1 class="headline lines">
+          <span class="ln"><span>Контент, который</span></span>
+          <span class="ln"><span><span class="mark">продаёт</span></span></span>
+        </h1>
+        <span class="doc-meta">черновик → правки → чистовик → деньги</span>
+
+        <!-- HERO «СЮЖЕТ» -->
+        <div class="story" id="story" aria-label="Демонстрация редактуры текста">
+          <p class="story-draft" id="storyDraft" aria-hidden="true"></p>
+          <p class="story-clean" id="storyClean">Статья снизила цену дочитывания и <span class="hl" id="storyHl">подняла продажи</span>.</p>
+          <div class="story-stamps" id="storyStamps" aria-hidden="true">
+            <span class="stamp-num green" id="stamp1">+45% продаж</span>
+            <span class="stamp-num red" id="stamp2">7,14&nbsp;₽ за дочитку</span>
+          </div>
+          <button class="story-replay" id="storyReplay" type="button" aria-label="Повторить">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v4h4"/></svg>
+            повторить
+          </button>
+        </div>
+
+        <p class="subhead has-note">Статьи для Яндекс ПромоСтраниц, Дзена, СМИ и блогов пишет <b>собственная редакция</b> — и мы ведём их до результата: дочитывания → переходы → заявки → продажи.<span class="anno r">это и есть наша работа<small>правим прямо у вас на глазах</small></span></p>
+
+        <p class="body-p has-note">Так в кейсе Spice Active цена дочитывания упала <span class="was">с 22&nbsp;₽</span> до <span class="mark">7,14&nbsp;₽</span>, а продажи выросли на <span class="mark">+45%</span>.<span class="anno l">цифра проверяемая<small>кейс Spice Active, ссылка ниже</small></span></p>
+
+        <div class="cta-row">
+          <a href="#contact" class="btn-primary magnetic" data-cta data-cur="обсудить"><span class="bp-inner">Обсудить задачу</span></a>
+          <button class="link-secondary" id="openLM" type="button" data-cur="разбор">
+            <span>А ваш текст уже продаёт? Вставьте абзац — <span class="em">AI вынесет вердикт и 3 правки</span> →</span>
+          </button>
+        </div>
+
+        <div class="chips">
+          <a href="#cases" class="chip">Яндекс ПромоСтраницы</a>
+          <a href="#cases" class="chip">Дзен под ключ</a>
+          <a href="#cases" class="chip">Статьи в СМИ</a>
+          <a href="#cases" class="chip">Корпоративные блоги</a>
+        </div>
+
+        <!-- MARQUEE цифр -->
+        <div class="marquee" aria-hidden="true">
+          <div class="marquee-track" id="marqTrack">
+            <span class="m-item"><b>29</b> лет на рынке</span>
+            <span class="m-item"><b>945 млн</b> суммарного охвата</span>
+            <span class="m-item"><b>1 798</b> статей написано</span>
+            <span class="m-item"><b>5 000 000+</b> читателей приведено</span>
+            <span class="m-item"><b>+45%</b> продаж · Spice Active</span>
+            <span class="m-item"><b>7,14 ₽</b> цена дочитывания</span>
+          </div>
+        </div>
+
+        <div class="trust">
+          <span><b>29</b> лет на рынке</span>
+          <span><b>945 млн</b> суммарного охвата</span>
+          <span>пишет штатная редакция</span>
+        </div>
+      </div>
+    </article>
+  </div>
+</main>
+
+<!-- ============ B. КАК ДОВОДИМ ДО ПРОДАЖ ============ -->
+<section class="section" id="how">
+  <div class="wrap reveal pre">
+    <article class="sheet">
+      <div class="col">
+        <span class="kicker static">Раскрываем кухню · путь одной статьи</span>
+        <h2 class="sec-title lines">
+          <span class="ln"><span>Хороший текст не продаёт.</span></span>
+          <span class="ln"><span>Продаёт <span class="mark">система</span></span></span>
+        </h2>
+        <p class="subhead has-note">Большинство агентств сдают файл — и на этом всё. У нас тут работа только начинается. Меряем не знаками, а <b>деньгами</b>.<span class="anno r">текст — это шаг&nbsp;2<small>остальное — система до денег</small></span></p>
+
+        <div class="flow reveal pre">
+          <div class="flow-step"><span class="num">1</span><h4>Бриф и сценарий</h4><p>Подробный сценарий статьи — вы согласуете его до первой строки.</p></div>
+          <div class="flow-step"><span class="num">2</span><h4>Текст</h4><p>Штатная редакция полного цикла: автор → редактор → корректор.</p></div>
+          <div class="flow-step has-note"><span class="num">3</span><h4>Дистрибуция</h4><p>Доставляем туда, где статью прочитает ваш покупатель.</p><div class="branch"><span>ПромоСтраницы</span><span>Дзен</span><span>СМИ</span><span>блог</span></div><span class="anno l">узел дистрибуции<small>без доставки текст не продаёт</small></span></div>
+          <div class="flow-step"><span class="num">4</span><h4>Тесты</h4><p>Заголовки и обложки гоняем, пока не найдём рабочую связку.</p></div>
+          <div class="flow-step"><span class="num">5</span><h4>Аналитика</h4><p>Дашборд: дочитывания, переходы, цена заявки, ROMI — цифры, не «всё хорошо».</p></div>
+          <div class="flow-step"><span class="num">6</span><h4>Масштаб</h4><p>Рабочие связки усиливаем, тёплых догоняем ретаргетингом.</p></div>
+        </div>
+
+        <div class="cta-row nomb">
+          <a href="#contact" class="btn-primary magnetic" data-cta data-cur="обсудить"><span class="bp-inner">Обсудить задачу</span></a>
+        </div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- ============ C. КЕЙСЫ ============ -->
+<section class="section" id="cases">
+  <div class="wrap reveal pre">
+    <article class="sheet">
+      <div class="col">
+        <span class="kicker static">Примеры из практики · посчитано до денег</span>
+        <h2 class="sec-title lines">
+          <span class="ln"><span>Кейсы, посчитанные</span></span>
+          <span class="ln"><span>до <span class="mark">денег</span></span></span>
+        </h2>
+        <p class="subhead has-note">Не «написали много статей», а что эти статьи принесли. Каждую цифру можно проверить.<span class="anno r">считаем до денег<small>не «50 статей», а что они принесли</small></span></p>
+
+        <div class="cases">
+          <div class="case">
+            <span class="case-glow"></span>
+            <div class="case-tags"><span>ПромоСтраницы</span><span>БАДы</span></div>
+            <div class="case-name">Spice Active</div>
+            <div class="case-hero">+45% продаж</div>
+            <p class="case-sub">за 7 месяцев. Дочитка снижена <b>с 22 до 7,14&nbsp;₽</b>, 455&nbsp;597 переходов на Ozon.</p>
+            <a href="https://vc.ru/marketing/1458781" class="case-link" target="_blank" rel="noopener" data-cur="читать">Разбор на VC.ru →</a>
+          </div>
+          <div class="case">
+            <span class="case-glow"></span>
+            <div class="case-tags"><span>ПромоСтраницы</span><span>Повседневный спрос</span></div>
+            <div class="case-name">Пиканта</div>
+            <div class="case-hero">12 293 конверсии</div>
+            <p class="case-sub">и <b>+155%</b> брендовых запросов. 21&nbsp;млн охвата, 587&nbsp;000 дочитываний.</p>
+          </div>
+          <div class="case">
+            <span class="case-glow"></span>
+            <div class="case-tags"><span>ПромоСтраницы</span><span>БАДы</span></div>
+            <div class="case-name">Vitabeauty</div>
+            <div class="case-hero">CPA −72%</div>
+            <p class="case-sub">со 100 до <b>28&nbsp;₽</b>. 22&nbsp;946 конверсий, 6&nbsp;млн охвата.</p>
+          </div>
+          <div class="case">
+            <span class="case-glow"></span>
+            <div class="case-tags"><span>Дзен</span><span>B2B-финансы</span></div>
+            <div class="case-name">Ринфин</div>
+            <div class="case-hero">141 заявка</div>
+            <p class="case-sub">в сложном B2B — <b>по 280–490&nbsp;₽</b>. Туда, где обычный таргет молчит.</p>
+          </div>
+        </div>
+
+        <p class="softline">Нам доверяют бренды, которые умеют считать:</p>
+        <div class="logos">
+          <span class="logo-pill">Hansa</span>
+          <span class="logo-pill">Familia</span>
+          <span class="logo-pill">Пиканта</span>
+          <span class="logo-pill">Мегаптека</span>
+          <span class="logo-pill">KIBERCAR</span>
+          <span class="logo-pill">Spice Active</span>
+        </div>
+
+        <div class="cta-row nomb" style="margin-top:6px">
+          <a href="#contact" class="btn-primary magnetic" data-cta data-cur="обсудить"><span class="bp-inner">Хочу разбор по моей нише</span></a>
+        </div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- ============ D. РЕДАКЦИЯ + ЯНДЕКС ============ -->
+<section class="section" id="team">
+  <div class="wrap reveal pre">
+    <article class="sheet">
+      <div class="col">
+        <span class="kicker static">Кто это пишет · редакция и партнёрство</span>
+        <h2 class="sec-title lines">
+          <span class="ln"><span>Пишет не биржа.</span></span>
+          <span class="ln"><span>Пишет редакция</span></span>
+        </h2>
+        <p class="subhead has-note">Полный цикл над каждым текстом: <b>автор → редактор → корректор</b>. Все сертифицированы Яндексом по ПромоСтраницам.<span class="anno l">не биржа<small>штатная редакция полного цикла</small></span></p>
+
+        <div class="people">
+          <div class="person"><div class="ava">ТУ</div><div><div class="pname">Тимур Угулава</div><div class="prole">Совладелец, официальный эксперт Яндекс Рекламы по ПромоСтраницам</div></div></div>
+          <div class="person"><div class="ava">МБ</div><div><div class="pname">Майя Блюм</div><div class="prole">Главный редактор — отвечает за смыслы и качество</div></div></div>
+          <div class="person"><div class="ava">КУ</div><div><div class="pname">Ксения Угулава</div><div class="prole">Продюсер контент-направления — связывает редакцию и результат</div></div></div>
+          <div class="person"><div class="ava">+</div><div><div class="pname">Авторы · редакторы · корректоры</div><div class="prole">Команда полного цикла под вашу нишу</div></div></div>
+        </div>
+
+        <hr class="divider mt">
+        <h3 class="sub-title has-note">Нас рекомендует сам Яндекс<span class="anno r">за плечом Яндекс<small>ведут те, кто учит рынок</small></span></h3>
+
+        <div class="trophies">
+          <div class="trophy"><b>Партнёр Яндекса с 2011 года</b><span>Сертифицированный партнёр — больше десяти лет внутри платформы</span></div>
+          <div class="trophy"><b>Эксперт Яндекс Рекламы в команде</b><span>Первыми пробуем новые функции ПромоСтраниц</span></div>
+          <div class="trophy"><b>Silver Mercury 2024</b><span>«Лучшая брендформанс-кампания» — отраслевое признание</span></div>
+          <div class="trophy"><b>Вся команда сертифицирована</b><span>Каждый специалист по ПромоСтраницам подтверждён Яндексом</span></div>
+        </div>
+
+        <div class="cta-row nomb">
+          <a href="#contact" class="btn-primary magnetic" data-cta data-cur="обсудить"><span class="bp-inner">Обсудить задачу</span></a>
+        </div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- ============ E. ФИНАЛ — FAQ + ФОРМА ============ -->
+<section class="section" id="contact">
+  <div class="wrap reveal pre">
+    <article class="sheet">
+      <div class="col">
+        <span class="kicker static">Перед стартом · короткие ответы</span>
+        <h2 class="sec-title lines">
+          <span class="ln"><span>Что обычно</span></span>
+          <span class="ln"><span>спрашивают</span></span>
+        </h2>
+
+        <div class="faq">
+          <div class="faq-item">
+            <button class="faq-q" type="button" data-cur="открыть">Мы небольшая компания. Нам подойдёт?</button>
+            <div class="faq-a"><div class="faq-a-inner">Да. Отбираем не по выручке, а по задаче. Если статейный канал вашему продукту не подходит — скажем честно на первом созвоне.</div></div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-q" type="button" data-cur="открыть">Когда ждать первых результатов?</button>
+            <div class="faq-a"><div class="faq-a-inner">Первая неделя — обучение алгоритма. Рабочий горизонт теста — один цикл вашей сделки: за это время видны дочитывания, переходы и первые заявки.</div></div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-q" type="button" data-cur="открыть">Кто будет писать и как разберётесь в нашей специфике?</button>
+            <div class="faq-a"><div class="faq-a-inner">Штатная редакция: автор → редактор → корректор. Сначала бриф и подробный сценарий, который вы согласуете. Работали с фармой, БАДами, B2B-финансами и недвижимостью.</div></div>
+          </div>
+        </div>
+
+        <hr class="divider mt" style="margin-top:30px">
+        <h3 class="sub-title has-note">Расскажите о продукте — предложим, как его продать контентом<span class="anno r">без бюджета и брифов<small>пара полей — остальное спросим сами</small></span></h3>
+
+        <form class="form-grid" onsubmit="return false" id="leadForm">
+          <div class="field">
+            <label for="f-name">Имя</label>
+            <input id="f-name" type="text" placeholder="Как к вам обращаться">
+          </div>
+          <div class="field">
+            <label>Как удобнее связаться</label>
+            <div class="seg" id="seg">
+              <button type="button" class="on" data-m="Telegram">Telegram</button>
+              <button type="button" data-m="Телефон">Телефон</button>
+              <button type="button" data-m="Почта">Почта</button>
+            </div>
+            <input id="f-contact" type="text" placeholder="@username в Telegram">
+          </div>
+          <div class="field">
+            <label for="f-task">О задаче <span class="opt">(необязательно)</span></label>
+            <textarea id="f-task" placeholder="Пара слов о продукте — остальное спросим сами"></textarea>
+          </div>
+          <button class="btn-primary" id="f-submit" type="button" data-cur="отправить"><span class="bp-inner">Обсудить задачу</span></button>
+          <div class="microcopy">Вернёмся в течение рабочего дня. Без рассылок и звонков «как вы там».</div>
+          <div class="form-sent" id="formSent">Спасибо! Мы получили заявку и вернёмся в течение рабочего дня.</div>
+        </form>
+
+        <div class="relaunch-box">
+          <h3>Пока не готовы к разговору?</h3>
+          <p>Проверьте свой текст на AI-разборе «Продаст или нет» — увидите, как мы думаем над текстом, ещё до брифа.</p>
+          <button class="link-secondary" id="openLM2" type="button" data-cur="разбор"><span class="em">→ Открыть разбор «Продаст или нет»</span></button>
+        </div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-top">
+      <a href="#top" class="logo">медиа<span class="sfera">сфера</span></a>
+      <div class="footer-links">
+        <a href="#how">Как доводим</a>
+        <a href="#cases">Кейсы</a>
+        <a href="#team">Редакция</a>
+        <a href="#" target="_blank" rel="noopener">Telegram агентства</a>
+        <a href="#">Политика конфиденциальности</a>
+      </div>
+    </div>
+    <div class="footer-meta">
+      ООО «Медиасфера» · контент, который продаёт · реквизиты по запросу
+      <span class="soft">Мы и в числе ведущих контент-агентств по версии Рейтинга Рунета — с отзывами клиентов на 5.0.</span>
+    </div>
+  </div>
+</footer>
+
+<!-- ============ LEAD-MAGNET MODAL ============ -->
+<div class="lm-backdrop" id="lmBackdrop" aria-hidden="true">
+  <div class="lm-panel" role="dialog" aria-modal="true" aria-label="Проверка текста — продаст или нет">
+    <div class="lm-kicker">Лид-магнит · живой AI-разбор</div>
+    <h3>Продаст или нет?</h3>
+    <p class="lm-sub">Вставьте заголовок, абзац или оффер — редактор (на базе ИИ) даст вердикт и 3 правки «было → стало». Это демо: показываем, как мы думаем над текстом.</p>
+    <textarea id="lmInput" placeholder="Например: «Наша компания предлагает широкий спектр качественных услуг для вашего бизнеса по выгодным ценам…»"></textarea>
+    <div class="lm-actions">
+      <button class="btn-primary" id="lmRun" type="button"><span class="bp-inner">Проверить текст</span></button>
+      <span class="lm-hint" id="lmHint">Можно вставить даже один заголовок.</span>
+      <button class="lm-close" id="lmClose" type="button">Закрыть</button>
+    </div>
+    <div class="verdict" id="verdict">
+      <div class="verdict-head">
+        <div class="gauge" id="gauge"><div class="gtxt"><span class="gnum" id="gnum">0</span><span class="gunit">/100</span></div></div>
+        <div>
+          <div class="vtag" id="vtag">—</div>
+          <div class="vsum" id="vsum">—</div>
+        </div>
+      </div>
+      <p class="edits-title">3 правки «было → стало»</p>
+      <ul class="edits" id="edits"></ul>
+      <div class="vfoot">Это упрощённое демо. Полный разбор с правками под вашу нишу делает живая редакция — <a href="#contact" id="vfootLink">обсудить задачу →</a></div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var doc = document, win = window, body = doc.body;
+  doc.documentElement.classList.add('js');
+  var reduce = win.matchMedia && win.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var isTouch = win.matchMedia && win.matchMedia('(hover: none)').matches;
+  var wide = function(){ return win.innerWidth > 1024; };
+
+  /* ---------- REVEAL (фолбэк-safe) ---------- */
+  var reveals = [].slice.call(doc.querySelectorAll('.reveal'));
+  reveals.forEach(function(el){ if(!reduce) el.classList.add('pre'); });
+  function showAll(){ reveals.forEach(function(el){ el.classList.remove('pre'); el.classList.add('in'); }); }
+
+  if(reduce){
+    showAll();
+  } else if('IntersectionObserver' in win){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(e.isIntersecting){ e.target.classList.remove('pre'); e.target.classList.add('in'); io.unobserve(e.target); }
+      });
+    }, {threshold:0.12, rootMargin:'0px 0px -8% 0px'});
+    reveals.forEach(function(el){ io.observe(el); });
+    setTimeout(showAll, 2800); /* safety */
+  } else {
+    showAll();
+  }
+
+  /* ---------- SCROLL PROGRESS ---------- */
+  var prog = doc.getElementById('progress');
+  function onScrollProg(){
+    var h = doc.documentElement;
+    var max = h.scrollHeight - h.clientHeight;
+    var p = max > 0 ? (h.scrollTop || body.scrollTop) / max : 0;
+    prog.style.width = (p*100).toFixed(2) + '%';
+  }
+  win.addEventListener('scroll', onScrollProg, {passive:true});
+  onScrollProg();
+
+  /* ---------- LIGHT PARALLAX (лист дышит на скролле), только десктоп ---------- */
+  if(!reduce && !isTouch && wide()){
+    var sheets = [].slice.call(doc.querySelectorAll('.sheet'));
+    var ticking = false;
+    function parallax(){
+      var vh = win.innerHeight;
+      sheets.forEach(function(s){
+        var r = s.getBoundingClientRect();
+        var off = (r.top + r.height/2 - vh/2) / vh;
+        var shift = Math.max(-9, Math.min(9, -off*9));
+        s.style.transform = 'translateY(' + shift.toFixed(2) + 'px)';
+      });
+      ticking = false;
+    }
+    win.addEventListener('scroll', function(){ if(!ticking){ requestAnimationFrame(parallax); ticking = true; } }, {passive:true});
+    parallax();
+  }
+
+  /* ---------- HERO «СЮЖЕТ» (кинетическая редакция) ---------- */
+  var draftEl = doc.getElementById('storyDraft');
+  var cleanEl = doc.getElementById('storyClean');
+  var hlEl    = doc.getElementById('storyHl');
+  var stamp1  = doc.getElementById('stamp1');
+  var stamp2  = doc.getElementById('stamp2');
+  var storyEl = doc.getElementById('story');
+  var replayBtn = doc.getElementById('storyReplay');
+  var DRAFT_TOKENS = [
+    {t:'Мы предлагаем '},
+    {t:'широкий спектр', weak:true},
+    {t:' '},
+    {t:'качественных', weak:true},
+    {t:' услуг по '},
+    {t:'выгодным ценам', weak:true},
+    {t:'…'}
+  ];
+  var storyTimers = [];
+  function clearStory(){ storyTimers.forEach(clearTimeout); storyTimers = []; }
+  function later(fn, ms){ storyTimers.push(setTimeout(fn, ms)); }
+
+  function runStory(){
+    if(reduce || !draftEl) return;
+    clearStory();
+    storyEl.classList.remove('done');
+    cleanEl.classList.remove('show'); cleanEl.style.opacity='0'; cleanEl.style.transform='translateY(12px)';
+    hlEl.classList.remove('swipe');
+    stamp1.classList.remove('stamped'); stamp2.classList.remove('stamped');
+    draftEl.innerHTML='';
+    var caret = doc.createElement('span'); caret.className='type-caret'; draftEl.appendChild(caret);
+
+    var ti=0, ci=0, weakEls=[];
+    var typeSpeed=27;
+    function typeStep(){
+      if(ti>=DRAFT_TOKENS.length){ afterType(); return; }
+      var tok = DRAFT_TOKENS[ti];
+      if(ci===0){
+        var sp = doc.createElement('span');
+        if(tok.weak){ sp.className='w strike'; weakEls.push(sp); }
+        draftEl.insertBefore(sp, caret);
+        tok._el = sp;
+      }
+      tok._el.textContent = tok.t.slice(0, ci+1);
+      ci++;
+      if(ci>=tok.t.length){ ti++; ci=0; }
+      storyTimers.push(setTimeout(typeStep, typeSpeed));
+    }
+    function afterType(){
+      caret.classList.add('gone');
+      weakEls.forEach(function(el,i){ later(function(){ el.classList.add('go'); }, 200 + i*240); });
+      var strikeDone = 200 + weakEls.length*240 + 360;
+      later(function(){ cleanEl.style.opacity=''; cleanEl.style.transform=''; cleanEl.classList.add('show'); }, strikeDone+120);
+      later(function(){ hlEl.classList.add('swipe'); }, strikeDone+560);
+      later(function(){ stamp1.classList.add('stamped'); }, strikeDone+1000);
+      later(function(){ stamp2.classList.add('stamped'); }, strikeDone+1220);
+      later(function(){ storyEl.classList.add('done'); }, strikeDone+1500);
+    }
+    typeStep();
+  }
+
+  /* запуск + повтор при возврате в зону */
+  if(!reduce && draftEl){
+    var played = false;
+    if('IntersectionObserver' in win){
+      var sio = new IntersectionObserver(function(ents){
+        ents.forEach(function(e){
+          if(e.isIntersecting && !played){ played=true; requestAnimationFrame(function(){ later(runStory, 460); }); }
+          else if(!e.isIntersecting && played && e.intersectionRatio===0){ played=false; } /* ушли — позволим повтор */
+        });
+      }, {threshold:[0,0.5]});
+      sio.observe(storyEl);
+    } else {
+      requestAnimationFrame(function(){ later(runStory, 460); });
+    }
+    if(replayBtn) replayBtn.addEventListener('click', runStory);
+  }
+
+  /* ---------- OVERLAY MENU ---------- */
+  var menuToggle = doc.getElementById('menuToggle');
+  var overlay = doc.getElementById('overlayNav');
+  var overlayClose = doc.getElementById('overlayClose');
+  var lastFocus = null;
+  function openMenu(){
+    lastFocus = doc.activeElement;
+    body.classList.add('menu-open');
+    overlay.classList.add('open'); overlay.setAttribute('aria-hidden','false');
+    menuToggle.setAttribute('aria-expanded','true');
+    doc.documentElement.style.overflow='hidden';
+    setTimeout(function(){ overlayClose.focus(); }, 80);
+  }
+  function closeMenu(){
+    body.classList.remove('menu-open');
+    overlay.classList.remove('open'); overlay.setAttribute('aria-hidden','true');
+    menuToggle.setAttribute('aria-expanded','false');
+    doc.documentElement.style.overflow='';
+    if(lastFocus && lastFocus.focus) lastFocus.focus();
+  }
+  menuToggle.addEventListener('click', openMenu);
+  overlayClose.addEventListener('click', closeMenu);
+  overlay.querySelectorAll('a').forEach(function(a){ a.addEventListener('click', closeMenu); });
+  doc.addEventListener('keydown', function(e){ if(e.key==='Escape' && overlay.classList.contains('open')) closeMenu(); });
+
+  /* ---------- FAQ ---------- */
+  doc.querySelectorAll('.faq-q').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var item = btn.closest('.faq-item');
+      var a = item.querySelector('.faq-a');
+      var isOpen = item.classList.contains('open');
+      doc.querySelectorAll('.faq-item.open').forEach(function(o){
+        if(o!==item){ o.classList.remove('open'); o.querySelector('.faq-a').style.maxHeight=null; }
+      });
+      if(isOpen){ item.classList.remove('open'); a.style.maxHeight=null; }
+      else{ item.classList.add('open'); a.style.maxHeight = a.scrollHeight+'px'; }
+    });
+  });
+
+  /* ---------- FORM ---------- */
+  var ph = {Telegram:'@username в Telegram','Телефон':'+7 (000) 000-00-00','Почта':'you@company.ru'};
+  var contact = doc.getElementById('f-contact');
+  doc.querySelectorAll('#seg button').forEach(function(b){
+    b.addEventListener('click', function(){
+      doc.querySelectorAll('#seg button').forEach(function(x){ x.classList.remove('on'); });
+      b.classList.add('on'); contact.placeholder = ph[b.dataset.m] || '';
+    });
+  });
+  doc.getElementById('f-submit').addEventListener('click', function(){
+    var name = doc.getElementById('f-name');
+    if(!name.value.trim()){ name.focus(); return; }
+    if(!contact.value.trim()){ contact.focus(); return; }
+    doc.getElementById('formSent').classList.add('show');
+    this.querySelector('.bp-inner').textContent = 'Заявка отправлена';
+    this.style.background = 'var(--green)'; this.disabled = true;
+  });
+
+  /* ---------- LEAD MAGNET ---------- */
+  var backdrop = doc.getElementById('lmBackdrop');
+  function openLM(){ backdrop.classList.add('open'); backdrop.setAttribute('aria-hidden','false'); doc.documentElement.style.overflow='hidden'; setTimeout(function(){ doc.getElementById('lmInput').focus(); }, 60); }
+  function closeLM(){ backdrop.classList.remove('open'); backdrop.setAttribute('aria-hidden','true'); doc.documentElement.style.overflow=''; }
+  doc.getElementById('openLM').addEventListener('click', openLM);
+  doc.getElementById('openLM2').addEventListener('click', openLM);
+  doc.getElementById('lmClose').addEventListener('click', closeLM);
+  backdrop.addEventListener('click', function(e){ if(e.target===backdrop) closeLM(); });
+  doc.addEventListener('keydown', function(e){ if(e.key==='Escape' && backdrop.classList.contains('open')) closeLM(); });
+  doc.getElementById('vfootLink').addEventListener('click', closeLM);
+
+  var WEAK = [
+    {re:/широк(ий|ого|ому) спектр|спектр услуг/i, was:'широкий спектр качественных услуг', now:'статья, после которой покупают именно ваш продукт'},
+    {re:/индивидуальн\w* подход/i, was:'индивидуальный подход к каждому', now:'сценарий под вашу нишу — согласуете до первой строки'},
+    {re:/качествен\w+/i, was:'качественный текст', now:'текст, который снизил цену дочитки до 7,14 ₽'},
+    {re:/профессионал\w*/i, was:'мы профессионалы своего дела', now:'29 лет, 945 млн охвата — считаем в деньгах'},
+    {re:/выгодн\w+ цен|низк\w+ цен|доступн\w+ цен/i, was:'по выгодным ценам', now:'+45% продаж за 7 месяцев — вот результат'},
+    {re:/лидер\w* рынка|№\s*1|номер один/i, was:'лидер рынка', now:'партнёр Яндекса с 2011 года, Silver Mercury 2024'},
+    {re:/комплексн\w+ решени/i, was:'комплексное решение под ключ', now:'путь статьи: бриф → текст → дистрибуция → заявки'}
+  ];
+  var GENERIC = [
+    {was:'длинное вступление «о компании»', now:'первая строка — про боль читателя, а не про вас'},
+    {was:'нет ни одной цифры', now:'добавьте проверяемый результат: %, ₽, срок'},
+    {was:'абзац без призыва', now:'в конце — один понятный следующий шаг'}
+  ];
+  function buildEdits(text){
+    var found = [];
+    WEAK.forEach(function(p){ if(p.re.test(text) && found.length<3) found.push({was:p.was, now:p.now}); });
+    var gi=0; while(found.length<3 && gi<GENERIC.length){ found.push({was:GENERIC[gi].was, now:GENERIC[gi].now}); gi++; }
+    return found.slice(0,3);
+  }
+  function scoreText(text){
+    var t = text.trim(), s = 52;
+    if(/\d/.test(t)) s += 10;
+    if(/[?!]/.test(t)) s += 4;
+    if(t.length>60 && t.length<600) s += 6;
+    WEAK.forEach(function(p){ if(p.re.test(t)) s -= 9; });
+    if(/\bвы\b|\bваш/i.test(t)) s += 6;
+    if(t.length<25) s -= 12;
+    s = Math.max(18, Math.min(88, s + (t.length%7) - 3));
+    return Math.round(s);
+  }
+  var verdict = doc.getElementById('verdict'), runBtn = doc.getElementById('lmRun');
+  function animateGauge(target){
+    var el = doc.getElementById('gnum'), ga = doc.getElementById('gauge'), dur = 900, t0 = performance.now();
+    function step(now){
+      var p = Math.min(1, (now-t0)/dur);
+      var e = 1 - Math.pow(1-p, 3);
+      el.textContent = Math.round(target*e);
+      ga.style.setProperty('--p', (target*e).toFixed(1));
+      if(p<1) requestAnimationFrame(step); else { el.textContent = target; ga.style.setProperty('--p', target); }
+    }
+    requestAnimationFrame(step);
+  }
+  function runVerdict(){
+    var text = doc.getElementById('lmInput').value;
+    if(!text.trim()){ doc.getElementById('lmInput').focus(); doc.getElementById('lmHint').textContent='Вставьте хотя бы заголовок.'; return; }
+    runBtn.classList.add('loading'); runBtn.querySelector('.bp-inner').textContent='Анализирую…';
+    setTimeout(function(){
+      var sc = scoreText(text), edits = buildEdits(text);
+      var tone = sc>=70?'good':(sc>=45?'mid':'bad');
+      var tag = sc>=70?'Скорее продаёт':(sc>=45?'Продаёт наполовину':'Пока не продаёт');
+      var sum = sc>=70?'Хорошая база. Доведём до денег точечными правками.':
+                (sc>=45?'Есть смысл, но мешают штампы и нехватка фактов.':
+                 'Много общих слов и мало конкретики — читатель не дочитает.');
+      doc.getElementById('gauge').setAttribute('data-tone', tone);
+      doc.getElementById('vtag').textContent = tag;
+      doc.getElementById('vsum').textContent = sum;
+      var ul = doc.getElementById('edits'); ul.innerHTML='';
+      var liEls = [];
+      edits.forEach(function(e){
+        var li = doc.createElement('li'); li.className='edit';
+        li.innerHTML = '<span class="edit-n"></span><div><div class="edit-was">'+e.was+'</div><div class="edit-now">'+e.now+'</div></div>';
+        ul.appendChild(li); liEls.push(li);
+      });
+      verdict.classList.add('show');
+      if(!reduce){
+        animateGauge(sc);
+        liEls.forEach(function(li,i){ setTimeout(function(){ li.classList.add('in'); }, 320 + i*150); });
+      } else {
+        doc.getElementById('gnum').textContent = sc;
+        doc.getElementById('gauge').style.setProperty('--p', sc);
+        liEls.forEach(function(li){ li.classList.add('in'); });
+      }
+      runBtn.classList.remove('loading'); runBtn.querySelector('.bp-inner').textContent='Проверить ещё раз';
+    }, 650);
+  }
+  runBtn.addEventListener('click', runVerdict);
+  doc.getElementById('lmInput').addEventListener('keydown', function(e){ if((e.metaKey||e.ctrlKey)&&e.key==='Enter') runVerdict(); });
+
+  /* ---------- MAGNETIC CTA (десктоп) ---------- */
+  if(!reduce && !isTouch && win.innerWidth>900){
+    body.classList.remove('no-magnet');
+    [].slice.call(doc.querySelectorAll('.btn-primary.magnetic')).forEach(function(btn){
+      var inner = btn.querySelector('.bp-inner');
+      btn.addEventListener('mousemove', function(e){
+        var r = btn.getBoundingClientRect();
+        var x = e.clientX - r.left - r.width/2;
+        var y = e.clientY - r.top - r.height/2;
+        btn.style.transform = 'translate('+(x*0.22).toFixed(1)+'px,'+(y*0.32).toFixed(1)+'px)';
+        if(inner) inner.style.transform = 'translate('+(x*0.12).toFixed(1)+'px,'+(y*0.16).toFixed(1)+'px)';
+      });
+      btn.addEventListener('mouseleave', function(){ btn.style.transform=''; if(inner) inner.style.transform=''; });
+    });
+  }
+
+  /* ---------- CUSTOM CURSOR (десктоп) ---------- */
+  if(!reduce && !isTouch && win.innerWidth>900){
+    body.classList.add('cur-on','cur-active');
+    var ring = doc.getElementById('curRing'), dot = doc.getElementById('curDot'), lbl = doc.getElementById('curLabel');
+    var rx=0, ry=0, dx=0, dy=0, tx=0, ty=0, crf=null;
+    function loop(){
+      dx += (tx-dx)*0.35; dy += (ty-dy)*0.35;
+      rx += (tx-rx)*0.16; ry += (ty-ry)*0.16;
+      dot.style.transform = 'translate('+dx+'px,'+dy+'px) translate(-50%,-50%)';
+      ring.style.transform = 'translate('+rx+'px,'+ry+'px) translate(-50%,-50%)';
+      crf = requestAnimationFrame(loop);
+    }
+    doc.addEventListener('mousemove', function(e){ tx=e.clientX; ty=e.clientY; body.classList.add('cur-in'); if(!crf) loop(); });
+    doc.addEventListener('mouseleave', function(){ body.classList.remove('cur-in'); });
+    var HOT = 'a,button,.faq-q,.chip,.case-link,input,textarea,[data-cur]';
+    doc.addEventListener('mouseover', function(e){
+      var h = e.target.closest(HOT);
+      if(h){ ring.classList.add('hot'); dot.classList.add('hide'); lbl.textContent = h.getAttribute('data-cur') || ''; }
+    });
+    doc.addEventListener('mouseout', function(e){
+      var h = e.target.closest(HOT);
+      if(h && !(e.relatedTarget && e.relatedTarget.closest && e.relatedTarget.closest(HOT))){ ring.classList.remove('hot'); dot.classList.remove('hide'); lbl.textContent=''; }
+    });
+  }
+
+  /* ---------- COUNT-UP бегущая строка дублируется для бесшовности ---------- */
+  var track = doc.getElementById('marqTrack');
+  if(track && !reduce){ track.innerHTML += track.innerHTML; }
+
+  /* ---------- БЕГУЩАЯ СТРОКА реагирует на скорость скролла ---------- */
+  if(track && !reduce && !isTouch){
+    var lastY = win.pageYOffset, baseDur = 34, boost = 0, raf = null;
+    function decay(){
+      boost *= 0.9;
+      track.style.animationDuration = (baseDur / (1 + boost)).toFixed(2) + 's';
+      if(Math.abs(boost) > 0.01){ raf = requestAnimationFrame(decay); } else { track.style.animationDuration = baseDur+'s'; raf = null; }
+    }
+    win.addEventListener('scroll', function(){
+      var y = win.pageYOffset, dv = Math.min(2.2, Math.abs(y-lastY)/22);
+      lastY = y; if(dv > boost) boost = dv;
+      if(!raf) raf = requestAnimationFrame(decay);
+    }, {passive:true});
+  }
+
+  /* ---------- 3D-ТИЛТ + СВЕЧЕНИЕ карточек (десктоп) ---------- */
+  if(!reduce && !isTouch && win.innerWidth>900){
+    var tiltCards = [].slice.call(doc.querySelectorAll('.case'));
+    tiltCards.forEach(function(card){
+      var glow = card.querySelector('.case-glow'), rf = null, nx=0, ny=0;
+      card.addEventListener('mousemove', function(e){
+        var r = card.getBoundingClientRect();
+        var px = (e.clientX - r.left) / r.width, py = (e.clientY - r.top) / r.height;
+        nx = (py - 0.5) * -6; ny = (px - 0.5) * 7;
+        if(glow){ glow.style.setProperty('--mx', (px*100).toFixed(1)+'%'); glow.style.setProperty('--my', (py*100).toFixed(1)+'%'); }
+        if(!rf) rf = requestAnimationFrame(function(){
+          card.classList.add('tilting');
+          card.style.transform = 'translateY(-5px) rotateX('+nx.toFixed(2)+'deg) rotateY('+ny.toFixed(2)+'deg)';
+          rf = null;
+        });
+      });
+      card.addEventListener('mouseleave', function(){
+        card.classList.remove('tilting'); card.style.transform = '';
+      });
+    });
+  }
+
+  /* ---------- ЖИВОЙ ЛИД-МАГНИТ: реакция на ввод ---------- */
+  var lmInputEl = doc.getElementById('lmInput'), lmHintEl = doc.getElementById('lmHint');
+  if(lmInputEl && lmHintEl){
+    lmInputEl.addEventListener('input', function(){
+      var n = lmInputEl.value.trim().length;
+      if(n === 0){ lmHintEl.textContent = 'Можно вставить даже один заголовок.'; }
+      else if(n < 25){ lmHintEl.textContent = 'Ещё чуть-чуть — дайте абзац для точного разбора.'; }
+      else if(n < 200){ lmHintEl.textContent = 'Отлично, этого хватит для вердикта.'; }
+      else { lmHintEl.textContent = 'Хороший фрагмент — разберём по абзацу.'; }
+    });
+  }
+})();
+</script>
+</body>
+</html>
